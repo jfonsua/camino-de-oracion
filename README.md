@@ -1,1 +1,1 @@
-# camino-de-oraci-n
+# camino-de-oración
