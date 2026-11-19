@@ -21,7 +21,8 @@ body.dark{--bg:#211f1d;--paper:#2c2926;--ink:#f1e8dc;--muted:#c2b5a6;--wine:#e0b
 <section id="reader" class="screen"><button class="back" onclick="show('rosary')">← Misterios</button><div class="row"><div><div class="eyebrow" id="group"></div><h2>Santo Rosario</h2></div><div class="tools"><button onclick="font(-.1)">A−</button> <button onclick="font(.1)">A+</button></div></div><div class="panel"><div id="repCounter" class="rep-counter" style="display:none"></div><div class="progress-stage" id="rosaryProgressBlock"><div class="row"><span class="count">Progreso del Rosario</span><span id="rosaryPct" class="count">0 %</span></div><div class="progress"><span id="rosaryBar"></span></div></div><div class="progress-stage" id="litaniesProgressBlock" style="display:none"><div class="row"><span class="count">Progreso de las letanías</span><span id="litaniesPct" class="count">0 %</span></div><div class="progress"><span id="litaniesBar"></span></div></div><h3 id="heading"></h3><div id="text" class="prayer"></div><div class="row"><button class="secondary" id="prev" onclick="move(-1)">Anterior</button><button class="primary" id="next" onclick="move(1)">Siguiente</button><div id="choiceButtons" class="row" style="display:none;width:100%"><button class="primary" onclick="chooseLitanies(true)">Rezar las letanías</button><button class="secondary" onclick="chooseLitanies(false)">Finalizar</button></div></div></div></section>
 <section id="prayers" class="screen"><button class="back" onclick="show('home')">← Inicio</button><h2>Oraciones tradicionales</h2><div id="prayerCards" class="grid"></div><div id="detail" class="panel" style="display:none"><div class="row"><h3 id="pTitle"></h3><div class="tools"><button onclick="pfont(-.1)">A−</button> <button onclick="pfont(.1)">A+</button></div></div><div id="pText" class="prayer"></div></div></section>
 <section id="gospel" class="screen"><button class="back" onclick="show('home')">← Inicio</button><h2>Evangelio de hoy</h2><div class="panel"><p>Esta sección se conectará a una fuente fiable de lecturas litúrgicas y textos autorizados.</p><div class="notice">En esta maqueta no mostramos una lectura inventada ni una cita sin verificar. Incorporaremos el Evangelio diario cuando estén resueltos la fuente, los permisos de uso y el calendario litúrgico.</div><h3>Oración para comenzar</h3><p class="prayer">Señor, abre mi corazón a tu Palabra. Enséñame a escucharte con humildad y a llevar tu amor a los demás. Amén.</p></div></section>
-<section id="chaplet" class="screen"><button class="back" onclick="show('home')">← Inicio</button><h2>Coronilla de la Divina Misericordia</h2><div class="panel">Prepararemos la guía completa revisando cuidadosamente el orden y las fórmulas tradicionales.</div></section>
+<section id="chaplet" class="screen"><button class="back" onclick="show('home')">← Inicio</button><h2>Coronilla de la Divina Misericordia</h2><p class="muted">Reza con calma, avanzando una oración cada vez.</p><div class="panel"><div class="notice">La Coronilla se reza con las oraciones iniciales y cinco decenas. En cada decena se ofrece al Padre Eterno la Pasión de Jesús y se repite diez veces la invocación.</div><p><button class="primary" onclick="beginChaplet()">Comenzar la Coronilla</button></p></div></section>
+<section id="chapletReader" class="screen"><button class="back" onclick="show('chaplet')">← Coronilla</button><div class="row"><div><div class="eyebrow">DIVINA MISERICORDIA</div><h2>Coronilla</h2></div><div class="tools"><button onclick="chapletFont(-.1)">A−</button> <button onclick="chapletFont(.1)">A+</button></div></div><div class="panel"><div class="row"><span class="count" id="chapletStage">Oraciones iniciales</span><span class="count" id="chapletPct">0 %</span></div><div class="progress"><span id="chapletBar"></span></div><div id="chapletCounter" class="rep-counter" style="display:none"></div><h3 id="chapletHeading"></h3><div id="chapletText" class="prayer"></div><div class="row"><button class="secondary" id="chapletPrev" onclick="moveChaplet(-1)">Anterior</button><button class="primary" id="chapletNext" onclick="moveChaplet(1)">Siguiente</button></div></div></section>
 <section id="novenas" class="screen"><button class="back" onclick="show('home')">← Inicio</button><h2>Novenas</h2><div class="panel">Una selección inicial de novenas tradicionales, con sus nueve días y progreso guardado.</div></section>
 <section id="devotions" class="screen"><button class="back" onclick="show('home')">← Inicio</button><h2>Santos y devociones</h2><div class="panel">Una selección de devociones tradicionales que iremos incorporando y revisando.</div></section>
 <script>
@@ -98,4 +99,55 @@ function makePrayers(){document.getElementById("prayerCards").innerHTML=P.map((p
 function openP(i){document.getElementById("detail").style.display="block";document.getElementById("pTitle").textContent=P[i][0];document.getElementById("pText").textContent=P[i][1];document.getElementById("pText").style.fontSize=pfs+"rem";document.getElementById("detail").scrollIntoView({behavior:"smooth"})}
 function pfont(n){pfs=Math.max(1,Math.min(1.8,pfs+n));document.getElementById("pText").style.fontSize=pfs+"rem"}
 makePrayers();
+
+// Coronilla de la Divina Misericordia: flujo independiente del Santo Rosario.
+const CHAPLET_PRAYERS = {
+ cross: "En el nombre del Padre, y del Hijo, y del Espíritu Santo. Amén.",
+ opening: "Expiraste, Jesús, pero la fuente de vida brotó para las almas, y el océano de misericordia se abrió para el mundo entero.\n\nOh, fuente de vida, insondable misericordia divina, envuelve al mundo entero y derrámate sobre nosotros.",
+ blood: "Oh, Sangre y Agua que brotaste del Corazón de Jesús como una fuente de misericordia para nosotros, en Ti confío.",
+ ourFather: P[1][1], hailMary: P[2][1],
+ creed: "Creo en Dios, Padre todopoderoso,\nCreador del cielo y de la tierra.\nCreo en Jesucristo, su único Hijo, nuestro Señor,\nque fue concebido por obra y gracia del Espíritu Santo,\nnació de Santa María Virgen,\npadeció bajo el poder de Poncio Pilato,\nfue crucificado, muerto y sepultado,\ndescendió a los infiernos,\nal tercer día resucitó de entre los muertos,\nsubió a los cielos y está sentado a la derecha de Dios, Padre todopoderoso.\nDesde allí ha de venir a juzgar a vivos y muertos.\nCreo en el Espíritu Santo,\nla santa Iglesia católica,\nla comunión de los santos,\nel perdón de los pecados,\nla resurrección de la carne\ny la vida eterna. Amén.",
+ eternalFather: "Padre Eterno, te ofrezco el Cuerpo y la Sangre, el Alma y la Divinidad de tu amadísimo Hijo, nuestro Señor Jesucristo, como propiciación de nuestros pecados y los del mundo entero.",
+ invocation: "Por su dolorosa Pasión, ten misericordia de nosotros y del mundo entero.",
+ holyGod: "Santo Dios, Santo Fuerte, Santo Inmortal, ten piedad de nosotros y del mundo entero.",
+ closing: "Oh Dios eterno, en quien la misericordia es infinita y el tesoro de compasión inagotable, vuelve a nosotros tu mirada bondadosa y aumenta tu misericordia en nosotros, para que en los momentos difíciles no nos desesperemos ni nos desalentemos, sino que, con gran confianza, nos sometamos a tu santa voluntad, que es el Amor y la Misericordia mismos. Amén."
+};
+let chapletSteps=[], chapletIndex=0, chapletFs=1.25;
+function addChapletStep(title,text,kind='prayer',number=null,total=null,stage='Oraciones iniciales') { chapletSteps.push({title,text,kind,number,total,stage}); }
+function buildChapletSteps(){
+ chapletSteps=[];
+ addChapletStep('Señal de la cruz',CHAPLET_PRAYERS.cross);
+ addChapletStep('Oración inicial',CHAPLET_PRAYERS.opening);
+ addChapletStep('Invocación',CHAPLET_PRAYERS.blood);
+ addChapletStep('Padre nuestro',CHAPLET_PRAYERS.ourFather);
+ addChapletStep('Ave María',CHAPLET_PRAYERS.hailMary);
+ addChapletStep('Credo',CHAPLET_PRAYERS.creed);
+ for(let d=1;d<=5;d++){
+   addChapletStep('Padre Eterno',CHAPLET_PRAYERS.eternalFather,'decade',d,5,'Decena '+d+' de 5');
+   for(let n=1;n<=10;n++) addChapletStep('Por su dolorosa Pasión',CHAPLET_PRAYERS.invocation,'invocation',n,10,'Decena '+d+' de 5');
+ }
+ for(let n=1;n<=3;n++) addChapletStep('Santo Dios',CHAPLET_PRAYERS.holyGod,'holy',n,3,'Oración final');
+ addChapletStep('Oración final',CHAPLET_PRAYERS.closing,'closing',null,null,'Oración final');
+ addChapletStep('Señal de la cruz',CHAPLET_PRAYERS.cross,'finish',null,null,'Final');
+}
+function beginChaplet(){buildChapletSteps();chapletIndex=0;drawChaplet();show('chapletReader')}
+function drawChaplet(){
+ const s=chapletSteps[chapletIndex], pct=Math.round((chapletIndex+1)/chapletSteps.length*100);
+ document.getElementById('chapletStage').textContent=s.stage;
+ document.getElementById('chapletPct').textContent=pct+' %';
+ document.getElementById('chapletBar').style.width=pct+'%';
+ const c=document.getElementById('chapletCounter');
+ if(s.kind==='decade'){c.textContent='Decena '+s.number+' de '+s.total;c.style.display='inline-block'}
+ else if(s.kind==='invocation'){c.textContent='Invocación '+s.number+' de '+s.total;c.style.display='inline-block'}
+ else if(s.kind==='holy'){c.textContent='Repetición '+s.number+' de '+s.total;c.style.display='inline-block'}
+ else{c.textContent='';c.style.display='none'}
+ document.getElementById('chapletHeading').textContent=s.title;
+ document.getElementById('chapletText').textContent=s.text;
+ document.getElementById('chapletText').style.fontSize=chapletFs+'rem';
+ document.getElementById('chapletPrev').disabled=chapletIndex===0;
+ document.getElementById('chapletNext').textContent=chapletIndex===chapletSteps.length-1?'Finalizar':'Siguiente';
+}
+function moveChaplet(n){if(n===1&&chapletIndex===chapletSteps.length-1){show('home');return;}chapletIndex=Math.max(0,Math.min(chapletSteps.length-1,chapletIndex+n));drawChaplet();}
+function chapletFont(n){chapletFs=Math.max(1,Math.min(1.8,chapletFs+n));drawChaplet();}
+
 </script></body></html>
